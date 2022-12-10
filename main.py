@@ -1,6 +1,7 @@
 import time
 import asyncio
 import math
+
 import simpy
 import random
 
@@ -127,8 +128,8 @@ def comprar_matricula(nombre):
 def generar_estudiante():
     nro_apellidos = [random.randint(1, 103)]
     nro_nombres = [random.randint(1, 455)]
-    lista_nombres = open('Conexion/nombres-propios-es.txt')
-    lista_apellidos = open('Conexion/apellidos-es.txt')
+    lista_nombres = open('Conexion/nombres-propios-es.txt', encoding="utf8")
+    lista_apellidos = open('Conexion/apellidos-es.txt', encoding="utf8")
     result = ''
     for i, line in enumerate(lista_nombres):
         if i in nro_nombres:
