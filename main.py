@@ -24,29 +24,37 @@ contador_cola = 1
 tiempo_espera = 0.0
 duracion = 0.0
 fin = 0.0
+lista_rezagados: list = []
+lista_compra = []
 
 
-def atender(est_nombre, env):
+def buscar_dinero(env, datos_estudiante):
+    # print('estudiante va a buscar dinero')
+    # dinero: int = 15
+    lista_rezagados.append(datos_estudiante)
+
+
+def atender(estudiante, dinero_estudiante, env):
     global duracion
     R = random.random()
     tiempo = TIEMPO_ATENCION_MAX - TIEMPO_ATENCION_MIN
     tiempo_atencion = TIEMPO_ATENCION_MIN + (tiempo * R)
     yield env.timeout(tiempo_atencion)
-    comprar_matricula(est_nombre)
-    print("Tiempo de la atencion para la matricula de %s duró unos %3.1f minutos" % (est_nombre, tiempo_atencion))
 
+    comprar_matricula(env, estudiante, dinero_estudiante, tiempo_atencion)
+    # print("Tiempo de la atencion para la matricula de %s duró unos %3.1f minutos" % (estudiante[0], tiempo_atencion))
     duracion = duracion + tiempo_atencion
 
 
-def estudiante_llegada(env, estudiante, personal):
+def estudiante_llegada(env, estudiante, dinero_estudiante, personal):
     global tiempo_espera
     global fin
     llega = env.now
-
-    print("%s llego a la ventanilla en minuto %2.1f" % (estudiante[0], llega))
+    print('\n')
+    print("%s llego a la ventanilla en el minuto %2.1f" % (estudiante[0], llega))
     print('con sus datos:')
     print('##################################')
-    print('# NOMBRE : '+estudiante[0])
+    print('# NOMBRE : ' + estudiante[0])
     print('# CI : ' + estudiante[1])
     print('# COD-SIS : ' + estudiante[2])
     print('##################################')
@@ -55,79 +63,100 @@ def estudiante_llegada(env, estudiante, personal):
         pasa = env.now
         espera = pasa - llega
         tiempo_espera = tiempo_espera + espera
-        print(str(estudiante[0]) + " pasa con cajero " + NOMBRE_CAJERO + " en minuto %3.1f habiendo esperado %2.1f" % (
-            pasa, espera))
-
-        yield env.process(atender(estudiante[0], env))
+        print(str(estudiante[0]) + " pasa con cajero " + NOMBRE_CAJERO + "en el minuto %3.1f habiendo esperado %2.1f "
+                                                                         "minutos" % (
+                  pasa, espera))
+        yield env.process(atender(estudiante, dinero_estudiante, env))
         deja = env.now
-
-        print(estudiante[0] + " se direge al rectorado en el minuto %3.1f" % deja)
-        print("<------------------------------------------------------------------->")
+        # print(estudiante[0] + " se direge al rectorado en el minuto %3.1f" % deja)
+        # print("<------------------------------------------------------------------->")
         fin = deja
 
 
-def comprar_matricula(nombre):
+def comprar_matricula(env, datos_estudiante, dinero_estudiante, tiempo_atencion):
+    global fin
     reglas_cliente = Estudiante()
     reglas_mesero = Cajero()
-    dinero_estudiante = random.randint(13, 20)
+    bandera: bool = True
     estudiante = AgenteReactivo(reglas_cliente.reglasEstudiante())
     cajero = AgenteReactivo(reglas_mesero.reglasCajero())
     global estado_cajero
     if estado_cajero:
-
-        if nombre != '':
+        if datos_estudiante[0] != '':
             estado_cajero = False
-            # print("Cajero " + NOMBRE_CAJERO + " libre\n")
-            print("Estudiante " + nombre + " es atendido por "+NOMBRE_CAJERO+"\n")
+            print("Estudiante " + datos_estudiante[0] + " es atendido por " + NOMBRE_CAJERO + "\n")
             for i in range(1, 6):
                 accion_cliente = estudiante.actuar(i, '')
-                accion_cajero = cajero.actuar(i+1, '')
+                accion_cajero = cajero.actuar(i + 1, '')
 
                 match accion_cajero:
                     case 'Solicitar':
-                        print('   Estudiante ' + nombre + ' realiza acción ' + accion_cliente + ' matricula \n')
+                        print('   Estudiante ' + datos_estudiante[
+                            0] + ' realiza acción ' + accion_cliente + ' matricula \n')
                     case 'Identificarse':
-                        print('   Estudiante ' + nombre + ' realiza acción ' + accion_cliente + '\n')
-                        print('   '+nombre+' proporciona sus numero de carnet y codigo sis')
+                        print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_cliente + '\n')
+                        print('   ' + datos_estudiante[0] + ' proporciona sus numero de carnet y codigo sis')
                     case 'Buscar':
                         print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + '\n')
-                        print('   Estudiante ' + nombre + ' realiza acción ' + accion_cliente + '\n')
-                        print('   Cajero '+NOMBRE_CAJERO+' encuentra los datos del estudiante '+nombre+'en el sistema\n')
+                        print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_cliente + '\n')
+                        print('   Cajero ' + NOMBRE_CAJERO + ' encuentra los datos del estudiante ' + datos_estudiante[
+                            0] + ' en el sistema \n')
                     case 'Pagar':
-                        print('   Estudiante ' + nombre + ' realiza acción ' + accion_cliente + '\n')
-                        print('   Estudiante ' + nombre + ' paga el monto de Bs ' + str(dinero_estudiante) + '\n')
-                        if dinero_estudiante== PRECIO_MATRICULA:
-                            print('   Cajero ' + NOMBRE_CAJERO + ' recibe el monto total de Bs' + str(dinero_estudiante) + '\n')
-                        elif dinero_estudiante> PRECIO_MATRICULA:
-                            print('   Cajero ' + NOMBRE_CAJERO + ' recibe el monto de Bs ' + str(dinero_estudiante) + '\n')
-                            print('   Cajero ' + NOMBRE_CAJERO + ' retorna Bs' + str(dinero_estudiante-PRECIO_MATRICULA) + ' de cambio \n')
+                        print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_cliente + '\n')
+                        print('   Estudiante ' + datos_estudiante[0] + ' paga el monto de Bs ' + str(
+                            dinero_estudiante) + '\n')
+                        if dinero_estudiante == PRECIO_MATRICULA:
+                            print('   Cajero ' + NOMBRE_CAJERO + ' recibe el monto total de Bs' + str(
+                                dinero_estudiante) + '\n')
+                        elif dinero_estudiante > PRECIO_MATRICULA:
+                            print('   Cajero ' + NOMBRE_CAJERO + ' recibe el monto de Bs ' + str(
+                                dinero_estudiante) + '\n')
+                            print('   Cajero ' + NOMBRE_CAJERO + ' retorna Bs' + str(
+                                dinero_estudiante - PRECIO_MATRICULA) + ' de cambio \n')
                         else:
                             print('   el monto no alcanza para pagar la matricula\n')
-                            print('   Cajero ' + NOMBRE_CAJERO + ' retorna el monto total de Bs' + str(dinero_estudiante) + '\n')
+                            print('   Cajero ' + NOMBRE_CAJERO + ' retorna el monto total de Bs' + str(
+                                dinero_estudiante) + '\n')
                             print('   estudiante se retira')
-                            res = 'estudiante se va a casa'
+                            res = 'estudiante va a buscar dinero'
+
                             estado_cajero = True
-                            return res
+                            bandera = False
 
                     case 'Facturar':
-                        print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + '\n')
+                        if bandera:
+                            print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + '\n')
                         # print('   Estudiante ' + nombre + ' realiza acción ' + accion_cliente + '\n')
             # time.sleep(3)
-            print('   Estudiante ' + nombre + ' obtuvo matricula \n')
-            res = ('---Estudiante ' + nombre + ' se direge al rectorado--- \n')
+            # print('   Estudiante ' + datos_estudiante[0] + ' obtuvo matricula \n')
+            # res = ('---Estudiante ' + datos_estudiante[0] + ' se direge al rectorado--- \n')
             estado_cajero = True
+            if bandera:
+                print('   Estudiante ' + datos_estudiante[0] + ' obtuvo matricula \n')
+                res = ('Estudiante ' + datos_estudiante[0] + ' se direge al rectorado ')
+            else:
+                res = 'estudiante va a buscar dinero'
+                buscar_dinero(env, datos_estudiante)
+
+            deja = env.now
+
+            print("Tiempo de la atencion para la matricula de %s duró unos %3.1f minutos" % (
+                datos_estudiante[0], tiempo_atencion))
+            print(res + " en el minuto %3.1f" % deja)
+            print("<------------------------------------------------------------------->")
+            fin = deja
             return res
         else:
             return ''
     else:
         print("Cajero " + NOMBRE_CAJERO + " ocupado\n")
-        result = ("---Estudiante " + nombre + " espera en la cola---\n")
+        result = ("---Estudiante " + datos_estudiante[0] + " espera en la cola---\n")
         return result
 
 
 def generar_estudiante():
-    nro_apellidos = [random.randint(1, 103)]
-    nro_nombres = [random.randint(1, 455)]
+    nro_apellidos = [random.randint(0, 102)]
+    nro_nombres = [random.randint(0, 454)]
     lista_nombres = open('Conexion/nombres-propios-es.txt', encoding="utf8")
     lista_apellidos = open('Conexion/apellidos-es.txt', encoding="utf8")
     result = ''
@@ -170,21 +199,28 @@ def obtenr_random():
 
 
 def main(env, personal):
-    lista_compra = []
-    for i in range(0, TOTAL_ESTUDIANTES):
-        x = agregar_estudiante()
-        estudiante = x.split("-")
+    if lista_rezagados:
+        lista_compra.remove(lista_rezagados[0][0])
+        print('>>>>>>> Estudiante ' + (lista_rezagados[0])[0] + ' vuelve a la fila')
         llegada = obtenr_random()
+        yield env.timeout(llegada)
+        env.process(estudiante_llegada(env, lista_rezagados[0], 15, personal))
+        lista_compra.append(lista_rezagados[0][0])
+        lista_rezagados.pop(0)
+    else:
+        for i in range(0, TOTAL_ESTUDIANTES):
+            x = agregar_estudiante()
+            estudiante = x.split("-")
+            llegada = obtenr_random()
+            dinero_estudiante = random.randint(13, 20)
+            if estudiante[0] != '':
+                lista_compra.append(estudiante[0])
+                yield env.timeout(llegada)
+                env.process(estudiante_llegada(env, estudiante, dinero_estudiante, personal))
 
-        if estudiante[0] != '':
-            # print(">>>>>>>>>>> Estudiante " + estudiante[0] + " llega a la ventanilla\n")
-            lista_compra.append(estudiante[0])
-            yield env.timeout(llegada)
-            env.process(estudiante_llegada(env, estudiante, personal))
-
-        else:
-            print('"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""')
-            print(estudiante[0])
+            else:
+                print('"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""')
+                print(estudiante[0])
 
 
 if __name__ == '__main__':
@@ -194,3 +230,7 @@ if __name__ == '__main__':
     personal = simpy.Resource(env, NUM_CAJERO)
     env.process(main(env, personal))
     env.run()
+    while lista_rezagados:
+        env.process(main(env, personal))
+        env.run()
+    print(lista_compra)
