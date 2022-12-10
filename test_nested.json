@@ -1,0 +1,59 @@
+[
+    {
+        "int": 1,
+        "str": "normal string",
+        "float": 1.5,
+        "list": [
+            "normal string",
+            1,
+            1.5
+        ],
+        "nested list": [
+            1,
+            1.5,
+            [
+                "normal string",
+                1,
+                1.5
+            ]
+        ]
+    },
+    {
+        "int": 1,
+        "str": "normal string",
+        "float": 1.5,
+        "list": [
+            "normal string",
+            1,
+            1.5
+        ],
+        "nested list": [
+            1,
+            1.5,
+            [
+                "normal string",
+                1,
+                1.5
+            ]
+        ]
+    },
+    {
+        "int": 1,
+        "str": "anormal string",
+        "float": 1.5,
+        "list": [
+            "anormal string",
+            1,
+            1.5
+        ],
+        "nested list": [
+            1,
+            1.5,
+            [
+                "anormal string",
+                1,
+                1.5
+            ]
+        ]
+    }
+]
