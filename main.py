@@ -156,7 +156,7 @@ def agregar_estudiante():
 
 
 def crear_cola(line):
-    with open('cola_espera.txt', 'a+') as f:
+    with open('cola_espera.txt', 'a+', encoding="utf8") as f:
         global contador_cola
         f.write(str(contador_cola) + '-' + line)
         f.write('\n')
@@ -189,6 +189,7 @@ def main(env, personal):
 
 if __name__ == '__main__':
     # random.seed(random.randint(1,SEMILLA))
+    open('cola_espera.txt', 'w').close()
     env = simpy.Environment()
     personal = simpy.Resource(env, NUM_CAJERO)
     env.process(main(env, personal))
