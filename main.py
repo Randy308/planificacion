@@ -64,9 +64,9 @@ def estudiante_llegada_rectorado(env1, estudiante, personal, llega):
         espera = pasa - llega
         tiempo_espera_rectorado = tiempo_espera_rectorado + espera
         print(str(estudiante[
-                      0]) + " pasa con el Director de carrera " + NOMBRE_DIRECTOR + " en el minuto %3.1f habiendo "
-                                                                                    "esperado %2.1f minutos" % (pasa,
-                                                                                                                espera))
+                      0]) + " pasa con el Director de carrera " + NOMBRE_DIRECTOR + "en el minuto %3.1f habiendo "
+                                                                                    "esperado %2.1f minutos en la "
+                                                                                    "fila" % (pasa,espera))
 
         yield env1.process(atencion_rectorado(env1, estudiante, nivel_estudiante))
 
@@ -103,8 +103,7 @@ def estudiante_llegada(env, estudiante, dinero_estudiante, personal):
         espera = pasa - llega
         tiempo_espera = tiempo_espera + espera
         print(str(estudiante[0]) + " pasa con cajero " + NOMBRE_CAJERO + "en el minuto %3.1f habiendo esperado %2.1f "
-                                                                         "minutos" % (
-                  pasa, espera))
+                                                                         "minutos en la fila" % (pasa, espera))
         yield env.process(atender(estudiante, dinero_estudiante, env))
         deja = env.now
         fin = deja
@@ -132,20 +131,24 @@ def inscribirse(env, datos_estudiante, tiempo_atencion, materias_nivel):
 
                         print('   Estudiante ' + datos_estudiante[0] +
                               ' realiza acción ' + accion_estudiante + ' inscripción \n')
+                        print('    Director ' + NOMBRE_DIRECTOR +
+                              ' realiza acción ' + accion_director + ', recibe la matricula del estudiante \n')
                     case 'Dictar':
                         print('   Estudiante ' + datos_estudiante[0] +
-                              ' realiza acción ' + accion_estudiante + ' las materias habilitadas para esta gestión \n')
-                        print('   Director ' + NOMBRE_DIRECTOR +
-                              ' menciona las materias habilitadas para este semestre de ' + SEMESTRE + ', las cuales '
-                                                                                                       'son:\n')
+                              ' realiza acción ' + accion_estudiante + ', escucha las materias '
+                                                                       'habilitadas para esta gestión \n')
+                        print('   Director ' + NOMBRE_DIRECTOR + ' realiza accion ' + accion_director +
+                              ', menciona las materias habilitadas para este semestre de ' + SEMESTRE + ', las cuales '
+                                                                                                        'son:\n')
                         for materias_men in materias_nivel:
                             print('    ' + materias_men[0])
-                    case 'Elegir':
+                    case 'Seleccionar':
                         if len(materias_nivel) > LIMITE_MATERIAS_INCRIPCION:
 
                             print('   Estudiante ' + datos_estudiante[0] +
-                                  ' realiza acción de ' + accion_estudiante + ' grupos solamente para 6 materias '
+                                  ' realiza acción de ' + accion_estudiante + ' grupos unicamente para 6 materias '
                                                                               'como limite\n')
+
                         else:
                             print('   Estudiante ' + datos_estudiante[0] +
                                   ' realiza acción de ' + accion_estudiante + ' los grupos de todas las  materias '
@@ -162,6 +165,8 @@ def inscribirse(env, datos_estudiante, tiempo_atencion, materias_nivel):
                             else:
                                 break
                             i += 1
+                        print('   Director ' + NOMBRE_DIRECTOR + ' realiza accion ' + accion_director +
+                              ', anota los grupos de materias del estudiante \n')
                         print('')
                     case 'Esperar':
                         print('   Estudiante ' + datos_estudiante[0] +
@@ -172,31 +177,36 @@ def inscribirse(env, datos_estudiante, tiempo_atencion, materias_nivel):
 
                             match accion_encargado:
                                 case 'Entregar':
-                                    accion_director = director.actuar(4 + j)
+                                    accion_director = director.actuar(3 + j)
                                     print('     Director ' + NOMBRE_DIRECTOR +
                                           ' realiza acción ' + accion_director + ' documentos de inscripcion del '
                                                                                  'estudiante \n')
-                                    print('     Encargado ' + NOMBRE_ENCARGADO +
-                                          ' recibe los documentos para la inscripcion del estudiante \n')
+                                    print(
+                                        '     Encargado ' + NOMBRE_ENCARGADO + ' realiza acción ' + accion_encargado
+                                        + ',recibe los documentos para la inscripcion del estudiante \n')
                                 case 'Habilitar':
                                     print('     Encargado ' + NOMBRE_ENCARGADO +
                                           ' realiza acción de ' + accion_encargado + ' las materias del estudiante \n')
                                 case 'Confirmar':
-                                    accion_director = director.actuar(3 + j)
+                                    accion_director = director.actuar(2 + j)
                                     print('     Encargado ' + NOMBRE_ENCARGADO +
-                                          ' realiza acción ' + accion_encargado + ' al director ' + NOMBRE_DIRECTOR +
+                                          ' realiza acción de ' + accion_encargado + ' al director ' + NOMBRE_DIRECTOR +
                                           ' sobre la incripcion del estudiante \n')
+                                    print('     Director ' + NOMBRE_DIRECTOR +
+                                          ' realiza acción ' + accion_director + ', recibe la confirmación de la '
+                                                                                 'inscripción  \n')
 
                     case 'Devolver':
+                        accion_director = director.actuar(i + 1)
                         print('   Director ' + NOMBRE_DIRECTOR +
-                              ' realiza acción ' + accion_director + ' la matricula del estudiante \n')
-                        print('   Estudiante ' + datos_estudiante[0] +
+                              ' realiza acción de ' + accion_director + ' la matricula al estudiante \n')
+                        print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_estudiante +
                               ' recibe devuelta su  matricula \n')
                     case 'Retirarse':
 
                         print('   Estudiante ' + datos_estudiante[0] +
                               ' realiza acción de ' + accion_estudiante)
-                        print('Proceso de inscripcion completada en el minuto %2.1f' % tiempo_atencion)
+                        print('Proceso de inscripcion termino en %2.1f minutos' % tiempo_atencion)
 
             print('<---------------------------------------------------------------------------------------->')
             estado_rectorado = True
@@ -226,15 +236,23 @@ def comprar_matricula(env, datos_estudiante, dinero_estudiante, tiempo_atencion)
                     case 'Solicitar':
                         print('   Estudiante ' + datos_estudiante[
                             0] + ' realiza acción ' + accion_estudiante + ' matricula \n')
+
                     case 'Identificarse':
                         print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_estudiante + '\n')
-                        print('   ' + datos_estudiante[0] + ' proporciona sus numero de carnet y codigo sis')
+
+                        print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + ', obtiene la '
+                                                                                                  'información '
+                                                                                                  'personal del '
+                                                                                                  'estudiante\n')
+                        print('   ' + datos_estudiante[0] + ' proporciona su número de carnet y codigo sis\n')
                     case 'Buscar':
                         print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + '\n')
                         print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_estudiante + '\n')
                         print('   Cajero ' + NOMBRE_CAJERO + ' encuentra los datos del estudiante ' + datos_estudiante[
                             0] + ' en el sistema \n')
                     case 'Pagar':
+                        print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + ', pide aporte al '
+                                                                                                  'estudiante\n')
                         print('   Estudiante ' + datos_estudiante[0] + ' realiza acción ' + accion_estudiante + '\n')
                         print('   Estudiante ' + datos_estudiante[0] + ' paga el monto de Bs ' + str(
                             dinero_estudiante) + '\n')
@@ -258,6 +276,8 @@ def comprar_matricula(env, datos_estudiante, dinero_estudiante, tiempo_atencion)
                     case 'Facturar':
                         if bandera:
                             print('   Cajero ' + NOMBRE_CAJERO + ' realiza acción ' + accion_cajero + '\n')
+                            print('   Estudiante ' + datos_estudiante[
+                                0] + ' realiza acción ' + accion_estudiante + ', recibe Matrícula \n')
 
             ultima_accion = estudiante.actuar(6)
             estado_cajero = True
@@ -294,8 +314,8 @@ def comprar_matricula(env, datos_estudiante, dinero_estudiante, tiempo_atencion)
 def generar_estudiante():
     nro_apellidos = [random.randint(0, 102)]
     nro_nombres = [random.randint(0, 454)]
-    lista_nombres = open('Conexion/nombres-propios-es.txt', encoding="utf8")
-    lista_apellidos = open('Conexion/apellidos-es.txt', encoding="utf8")
+    lista_nombres = open('Datos/nombres-propios-es.txt', encoding="utf8")
+    lista_apellidos = open('Datos/apellidos-es.txt', encoding="utf8")
     result = ''
     for i, line in enumerate(lista_nombres):
         if i in nro_nombres:

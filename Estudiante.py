@@ -3,8 +3,8 @@ import random
 
 class Estudiante():
 
-    def reglas_estudiante(self,compra_matricula=True):
-        if compra_matricula:
+    def reglas_estudiante(self, comprar_matricula=True):
+        if comprar_matricula:
             reglas = {1: 'Solicitar',
                       2: 'Identificarse',
                       3: 'Esperar',
@@ -15,11 +15,9 @@ class Estudiante():
         else:
             reglas = {1: 'Solicitar',
                       2: 'Dictar',
-                      3: 'Elegir',
+                      3: 'Seleccionar',
                       4: 'Esperar',
                       5: 'Devolver',
                       6: 'Retirarse'
                       }
         return reglas
-
-
