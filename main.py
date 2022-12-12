@@ -151,7 +151,7 @@ def inscribirse(env, datos_estudiante, tiempo_atencion, materias_nivel):
 
                         else:
                             print('   Estudiante ' + datos_estudiante[0] +
-                                  ' realiza acción de ' + accion_estudiante + ' los grupos de todas las  materias '
+                                  ' realiza acción de ' + accion_estudiante + ' los grupos para todas las  materias '
                                                                               'disponibles\n')
                         random.shuffle(materias_nivel)
                         i = 0
